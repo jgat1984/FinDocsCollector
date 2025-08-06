@@ -1,6 +1,5 @@
 .vs/
 
-
 # Python
 __pycache__/
 *.py[cod]
@@ -19,3 +18,5 @@ frontend/build/
 *.sln
 *.user
 *.pyproj
+
+collectors/token.pickle
