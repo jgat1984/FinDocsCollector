@@ -1,0 +1,21 @@
+.vs/
+
+
+# Python
+__pycache__/
+*.py[cod]
+*.sqlite3
+
+# Environment
+venv/
+.env
+
+# React
+frontend/node_modules/
+frontend/build/
+
+# VS Code & Visual Studio
+.vscode/
+*.sln
+*.user
+*.pyproj

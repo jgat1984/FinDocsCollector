@@ -1,0 +1,14 @@
+body {
+  background: #f9f9f9;
+  color: #333;
+}
+h1, h2, h3 {
+  color: #00478F;
+}
+a {
+  color: #FF5D00;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
