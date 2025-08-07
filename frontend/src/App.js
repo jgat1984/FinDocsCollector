@@ -124,6 +124,11 @@ const downloadJSON = () => {
             </tbody>
           </table>
 
+          <h3>Analytics</h3>
+          <p>Average High: {data.analytics.average_high}</p>
+          <p>Average Low: {data.analytics.average_low}</p>
+          <p>Trend: {data.analytics.trend}</p>
+          
           <h3>SEC Filings</h3>
           <ul>
             {data.sec_filings.map((filing, idx) => (
@@ -151,11 +156,6 @@ const downloadJSON = () => {
           <a href={data.earnings_transcript.link} target="_blank" rel="noreferrer">
             View Full Transcript
           </a>
-
-          <h3>Analytics</h3>
-          <p>Average High: {data.analytics.average_high}</p>
-          <p>Average Low: {data.analytics.average_low}</p>
-          <p>Trend: {data.analytics.trend}</p>
         </div>
         </div>
       )}
