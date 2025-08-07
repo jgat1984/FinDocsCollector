@@ -4,7 +4,6 @@ import feedparser
 
 def fetch_marketwatch_info(ticker):
     try:
-        # Primary method: scrape the website with user-agent
         url = f"https://www.marketwatch.com/investing/stock/{ticker.lower()}"
         headers = {
             "User-Agent": (
@@ -34,13 +33,13 @@ def fetch_marketwatch_info(ticker):
         if headlines:
             return headlines
         else:
-            raise Exception("No headlines found on page")
+            raise Exception("No headlines scraped")
 
     except Exception as e:
         print(f"[ERROR] MarketWatch scraping failed for {ticker}: {e}")
         print("[INFO] Falling back to RSS feed")
 
-        # Fallback: General MarketWatch RSS
+        # RSS Fallback (top stories)
         feed_url = "https://feeds.marketwatch.com/marketwatch/topstories/"
         feed = feedparser.parse(feed_url)
         fallback_news = []
