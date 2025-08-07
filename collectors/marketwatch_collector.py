@@ -1,8 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
+import feedparser
 
 def fetch_marketwatch_info(ticker):
     try:
+        # Primary method: scrape the website with user-agent
         url = f"https://www.marketwatch.com/investing/stock/{ticker.lower()}"
         headers = {
             "User-Agent": (
@@ -14,8 +16,8 @@ def fetch_marketwatch_info(ticker):
 
         response = requests.get(url, headers=headers, timeout=10)
         if response.status_code != 200:
-            print(f"[ERROR] MarketWatch request failed: {response.status_code}")
-            return []
+            print(f"[WARN] MarketWatch scraping failed: Status {response.status_code}")
+            raise Exception("Blocked by MarketWatch")
 
         soup = BeautifulSoup(response.text, "html.parser")
 
@@ -27,13 +29,26 @@ def fetch_marketwatch_info(ticker):
             if title_tag:
                 title = title_tag.get_text(strip=True)
                 link = title_tag["href"]
-                headlines.append({
-                    "title": title,
-                    "link": link
-                })
+                headlines.append({"title": title, "link": link})
 
-        return headlines
+        if headlines:
+            return headlines
+        else:
+            raise Exception("No headlines found on page")
 
     except Exception as e:
-        print(f"[ERROR] fetch_marketwatch_info failed: {e}")
-        return []
+        print(f"[ERROR] MarketWatch scraping failed for {ticker}: {e}")
+        print("[INFO] Falling back to RSS feed")
+
+        # Fallback: General MarketWatch RSS
+        feed_url = "https://feeds.marketwatch.com/marketwatch/topstories/"
+        feed = feedparser.parse(feed_url)
+        fallback_news = []
+
+        for entry in feed.entries[:5]:
+            fallback_news.append({
+                "title": entry.title,
+                "link": entry.link
+            })
+
+        return fallback_news
