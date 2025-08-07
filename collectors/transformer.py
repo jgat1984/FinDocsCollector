@@ -12,8 +12,10 @@ class DataTransformer:
                  self.data.get("3m_high"), self.data.get("1y_high")]
         lows = [self.data.get("7d_low"), self.data.get("1m_low"),
                 self.data.get("3m_low"), self.data.get("1y_low")]
-        avg_high = statistics.mean([p for p in highs if p])
-        avg_low = statistics.mean([p for p in lows if p])
+
+        avg_high = statistics.mean([p for p in highs if p is not None])
+        avg_low = statistics.mean([p for p in lows if p is not None])
+
         trend = "Bullish" if price and price > avg_high else "Bearish"
 
         self.data["analytics"] = {
@@ -29,3 +31,6 @@ class DataTransformer:
         self.enrich_price_data()
         self.add_timestamp()
         return self.data
+
+    def transform(self):
+        return self.run()
