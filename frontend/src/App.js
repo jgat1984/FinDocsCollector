@@ -27,13 +27,19 @@ function App() {
 // Download JSON
 const downloadJSON = () => {
   if (!data) return;
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json",
+  });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${ticker}_analysis.json`;
+  a.download = `${ticker}_data.json`;
   a.click();
+  URL.revokeObjectURL(url);
 };
+
+  
+
   
   // ✅ Upload file to Google Drive via backend
   const handleUpload = async () => {
@@ -150,6 +156,12 @@ const downloadJSON = () => {
           <p>Average High: {data.analytics.average_high}</p>
           <p>Average Low: {data.analytics.average_low}</p>
           <p>Trend: {data.analytics.trend}</p>
+
+            {/* Download JSON */}
+          <button onClick={downloadJSON} className="btn">
+            Download JSON
+          </button>
+        </div>
         </div>
       )}
     </div>
