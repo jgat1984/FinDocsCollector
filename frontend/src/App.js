@@ -11,9 +11,9 @@ function App() {
   // Fetch company data
   const fetchData = async () => {
     try {
-      const res = await fetch(`https://findocscollector.onrender.com/api/company/${ticker}`);
-      const result = await res.json();
-      if (res.ok) {
+      const response = await fetch(`https://findocscollector.onrender.com/api/company/${ticker}`);
+      const result = await response.json();
+      if (response.ok) {
         setData(result);
         setError(null);
       } else {
@@ -24,39 +24,40 @@ function App() {
     }
   };
 
-  // Handle Enter key for ticker search
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      fetchData();
-    }
+  // Download JSON
+  const downloadJSON = () => {
+    if (!data) return;
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${ticker}_data.json`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
-  // Handle file upload
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
-
-  const uploadFile = async () => {
-    if (!file) {
-      alert("Please choose a file first");
-      return;
-    }
+  // Upload file to Google Drive
+  const handleUpload = async () => {
+    if (!file) return;
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      const res = await fetch(`https://findocscollector.onrender.com/api/upload/`, {
+      const response = await fetch("https://findocscollector.onrender.com/api/upload/", {
         method: "POST",
         body: formData,
       });
-      const result = await res.json();
-      if (res.ok) {
-        setUploadMessage(`File uploaded successfully: ${result.file_name}`);
+
+      const result = await response.json();
+      if (response.ok) {
+        setUploadMessage(result.message || "Upload successful!");
       } else {
-        setUploadMessage(`Upload failed: ${result.error}`);
+        setUploadMessage(result.error || "Upload failed.");
       }
     } catch (err) {
-      setUploadMessage("Error uploading file.");
+      setUploadMessage("Upload failed: " + err.message);
     }
   };
 
@@ -64,91 +65,123 @@ function App() {
     <div className="container">
       <h1>FinDocsCollector</h1>
 
-      {/* Search box */}
-      <div className="search-box">
-        <input
-          type="text"
-          value={ticker}
-          placeholder="Enter ticker (e.g., MSFT)"
-          onChange={(e) => setTicker(e.target.value)}
-          onKeyPress={handleKeyPress}
-        />
-        <button onClick={fetchData}>Fetch</button>
+      {/* Search */}
+      <input
+        type="text"
+        value={ticker}
+        onChange={(e) => setTicker(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && fetchData()}
+        placeholder="Enter ticker symbol (e.g., MSFT)"
+      />
+      <button onClick={fetchData}>Fetch</button>
+      <button onClick={downloadJSON} disabled={!data}>Download JSON</button>
+
+      {/* Upload */}
+      <div>
+        <input type="file" onChange={(e) => setFile(e.target.files[0])} />
+        <button onClick={handleUpload}>Upload to Google Drive</button>
+        {uploadMessage && <p className="upload-message">{uploadMessage}</p>}
       </div>
 
-      {/* Upload box */}
-      <div className="upload-box">
-        <input type="file" onChange={handleFileChange} />
-        <button onClick={uploadFile}>Upload to Google Drive</button>
-      </div>
+      {error && <p className="error">{error}</p>}
 
-      {uploadMessage && <p>{uploadMessage}</p>}
-
-      {/* Results */}
       {data && (
         <div className="results">
+          <h2>{data.ticker} – ${Number(data.price || 0).toFixed(2)}</h2>
 
-          {/* Header with ticker & price */}
-          <div className="header">
-            <h2>{data.ticker} — ${Number(data.price || 0).toFixed(2)}</h2>
-          </div>
+          {/* Price Ranges Table */}
+          <h3>Price Ranges</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Period</th>
+                <th>High</th>
+                <th>Low</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>7d</td>
+                <td>{data["7d_high"]}</td>
+                <td>{data["7d_low"]}</td>
+              </tr>
+              <tr>
+                <td>1m</td>
+                <td>{data["1m_high"]}</td>
+                <td>{data["1m_low"]}</td>
+              </tr>
+              <tr>
+                <td>3m</td>
+                <td>{data["3m_high"]}</td>
+                <td>{data["3m_low"]}</td>
+              </tr>
+              <tr>
+                <td>1y</td>
+                <td>{data["1y_high"]}</td>
+                <td>{data["1y_low"]}</td>
+              </tr>
+            </tbody>
+          </table>
 
-          {/* Key data */}
-          <section className="key-data">
-            <p><strong>7d High:</strong> {data["7d_high"]}</p>
-            <p><strong>7d Low:</strong> {data["7d_low"]}</p>
-            <p><strong>1m High:</strong> {data["1m_high"]}</p>
-            <p><strong>1m Low:</strong> {data["1m_low"]}</p>
-            <p><strong>3m High:</strong> {data["3m_high"]}</p>
-            <p><strong>3m Low:</strong> {data["3m_low"]}</p>
-            <p><strong>1y High:</strong> {data["1y_high"]}</p>
-            <p><strong>1y Low:</strong> {data["1y_low"]}</p>
-          </section>
-
-          {/* Analytics - directly under Key Data */}
+          {/* Analytics Table */}
           {data.analytics && (
-            <section className="analytics">
-              <h2>Analytics</h2>
-              <pre>{JSON.stringify(data.analytics, null, 2)}</pre>
-            </section>
+            <>
+              <h3>Analytics</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Average High</th>
+                    <th>Average Low</th>
+                    <th>Trend</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{data.analytics.average_high}</td>
+                    <td>{data.analytics.average_low}</td>
+                    <td>{data.analytics.trend}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </>
           )}
 
           {/* SEC Filings */}
-          {data.sec_filings && (
-            <section className="sec-filings">
-              <h2>SEC Filings</h2>
-              <ul>
-                {data.sec_filings.map((filing, idx) => (
-                  <li key={idx}>
-                    <a href={filing.link} target="_blank" rel="noopener noreferrer">
-                      {filing.title}
-                    </a>{" "}
-                    — {filing.date}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
+          <h3>SEC Filings</h3>
+          <ul>
+            {data.sec_filings.map((filing, idx) => (
+              <li key={idx}>
+                <a href={filing.link} target="_blank" rel="noreferrer">
+                  {filing.title} ({filing.date})
+                </a>
+              </li>
+            ))}
+          </ul>
 
-          {/* News */}
-          {data.news && (
-            <section className="news">
-              <h2>News</h2>
-              <ul>
-                {data.news.map((story, idx) => (
-                  <li key={idx}>
-                    <a href={story.link} target="_blank" rel="noopener noreferrer">
-                      {story.title}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </section>
+          {/* Market News */}
+          <h3>Market News</h3>
+          <ul>
+            {data.market_news.map((item, idx) => (
+              <li key={idx}>
+                <a href={item.link} target="_blank" rel="noreferrer">
+                  {item.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+
+          {/* Earnings Transcript */}
+          {data.earnings_transcript && (
+            <>
+              <h3>Earnings Transcript</h3>
+              <p>{data.earnings_transcript.summary}</p>
+              <a href={data.earnings_transcript.link} target="_blank" rel="noreferrer">
+                View Full Transcript
+              </a>
+            </>
           )}
         </div>
       )}
-
-      {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
 }
