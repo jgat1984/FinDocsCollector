@@ -1,51 +1,57 @@
+import os
+import mimetypes
+from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-import os
-import pickle
 
-# Path to your credentials.json
+# Constants
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CREDENTIALS_PATH = os.path.join(BASE_DIR, "../credentials.json")
-TOKEN_PATH = os.path.join(BASE_DIR, "token.pickle")
-
-# Google Drive API scope
+CREDENTIALS_PATH = os.path.join(BASE_DIR, "../credentials.json")  # Adjust path if needed
+FOLDER_ID = '1fAwIJq2od7nMYPEojHDBYN3zsdIzpseZ'  # Your actual FinDocsUploads folder ID
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
 
+# Initialize Drive service
 def get_drive_service():
-    """Authenticate and return Google Drive API service."""
-    creds = None
-    if os.path.exists(TOKEN_PATH):
-        with open(TOKEN_PATH, 'rb') as token:
-            creds = pickle.load(token)
-
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_PATH, SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open(TOKEN_PATH, 'wb') as token:
-            pickle.dump(creds, token)
-
+    creds = service_account.Credentials.from_service_account_file(
+        CREDENTIALS_PATH, scopes=SCOPES
+    )
     return build('drive', 'v3', credentials=creds)
 
-def upload_file_to_drive(file_path, file_name=None, mime_type="application/octet-stream", folder_id=None):
+# Upload file function
+def upload_file_to_drive(file_path, file_name=None, mime_type=None, folder_id=FOLDER_ID):
     """
-    Uploads a file to Google Drive.
-    :param file_path: Local file path
-    :param file_name: Optional custom name for file
-    :param mime_type: MIME type
-    :param folder_id: Optional Google Drive folder ID
-    :return: Uploaded file ID
+    Uploads a file to Google Drive (into your shared folder).
+    :param file_path: Path to the local file
+    :param file_name: Custom file name (optional)
+    :param mime_type: File type (auto-detected if None)
+    :param folder_id: Google Drive folder ID
+    :return: File ID or None
     """
-    service = get_drive_service()
-    file_metadata = {'name': file_name or os.path.basename(file_path)}
-    if folder_id:
-        file_metadata['parents'] = [folder_id]
+    try:
+        service = get_drive_service()
+        file_name = file_name or os.path.basename(file_path)
+        mime_type = mime_type or mimetypes.guess_type(file_path)[0] or 'application/octet-stream'
 
-    media = MediaFileUpload(file_path, mimetype=mime_type, resumable=True)
-    uploaded_file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-    return uploaded_file.get('id')
+        file_metadata = {
+            'name': file_name,
+            'parents': [folder_id]
+        }
+
+        media = MediaFileUpload(file_path, mimetype=mime_type, resumable=True)
+
+        uploaded_file = service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields='id, webViewLink'
+        ).execute()
+
+        print(f"✅ Uploaded: {file_name}")
+        print(f"🔗 View it here: {uploaded_file['webViewLink']}")
+        return uploaded_file.get('id')
+
+    except Exception as e:
+        print(f"❌ Upload failed: {e}")
+        return None
+
+# Optional test:
+# upload_file_to_drive("test_upload.txt")
