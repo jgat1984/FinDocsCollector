@@ -124,10 +124,12 @@ const downloadJSON = () => {
             </tbody>
           </table>
 
+          {/* ✅ Moved Analytics block up here */}
           <h3>Analytics</h3>
           <p>Average High: {data.analytics.average_high}</p>
           <p>Average Low: {data.analytics.average_low}</p>
           <p>Trend: {data.analytics.trend}</p>
+
           
           <h3>SEC Filings</h3>
           <ul>
