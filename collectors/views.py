@@ -1,8 +1,5 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-import traceback
-import tempfile
-import os
 
 from .yahoo_collector import fetch_yahoo_data
 from .sec_collector import fetch_sec_filings
@@ -11,96 +8,51 @@ from .earnings_transcript_collector import fetch_earnings_transcript
 from .transformer import DataTransformer
 from .google_drive_uploader import upload_file_to_drive
 
-
+@csrf_exempt
 def company_data_view(request, ticker):
-    """Main API endpoint: Fetches data from collectors, transforms it, returns JSON"""
     try:
-        print("=" * 50)
+        print("=" * 60)
         print(f"[INFO] Request received for ticker: {ticker}")
 
-        # ✅ Yahoo Finance
+        # ✅ Yahoo Finance Data
         raw_data = fetch_yahoo_data(ticker)
 
         # ✅ SEC Filings
         try:
             raw_data["sec_filings"] = fetch_sec_filings(ticker)
         except Exception as e:
-            print("[ERROR] SEC Collector failed:", e)
+            print(f"[ERROR] SEC fetch failed: {e}")
             raw_data["sec_filings"] = []
 
         # ✅ MarketWatch News
         try:
-            raw_data["market_news"] = fetch_marketwatch_info(ticker)
+            news_data = fetch_marketwatch_info(ticker)
+            print("[DEBUG] MarketWatch returned:", news_data)
+            raw_data["market_news"] = news_data
         except Exception as e:
-            print("[ERROR] MarketWatch Collector failed:", e)
-            raw_data["market_news"] = [{"title": "No live news available", "link": "#"}]
+            print(f"[ERROR] MarketWatch failed: {e}")
+            raw_data["market_news"] = []
 
         # ✅ Earnings Transcript
         try:
             raw_data["earnings_transcript"] = fetch_earnings_transcript(ticker)
         except Exception as e:
-            print("[ERROR] Transcript Collector failed:", e)
-            raw_data["earnings_transcript"] = {"summary": "Not available", "link": None}
+            print(f"[ERROR] Earnings transcript failed: {e}")
+            raw_data["earnings_transcript"] = {
+                "summary": "Transcript not available",
+                "link": f"https://seekingalpha.com/symbol/{ticker}/earnings/transcripts"
+            }
 
-        # ✅ Data Transformation
+        # ✅ Transform Data (Analytics, Trends, etc.)
         try:
-            transformer = DataTransformer(raw_data)
-            transformed = transformer.run()
+            transformer = DataTransformer()
+            transformed = transformer.transform(raw_data)
+            raw_data.update(transformed)
         except Exception as e:
-            print("[ERROR] Transformer failed:", e)
-            transformed = raw_data
+            print(f"[ERROR] Data transformation failed: {e}")
 
-        return JsonResponse(transformed, safe=False)
+        return JsonResponse(raw_data, safe=False)
 
     except Exception as e:
-        print("[FATAL ERROR] company_data_view failed:", e)
-        print(traceback.format_exc())
-        return JsonResponse({"error": str(e)}, status=500)
-
-
-# ❌ REMOVE THIS OLD FUNCTION – IT CAUSED THE ERROR
-# @csrf_exempt
-# def upload_to_drive(request):
-#     """(Deprecated) Old Google Drive upload that passes InMemoryUploadedFile directly."""
-#     return JsonResponse({"error": "This endpoint is deprecated. Use /api/upload/ instead."}, status=410)
-
-
-# ✅ Old CORRECT UPLOAD ENDPOINT
-@csrf_exempt
-def upload_to_drive(request):
-    """Handles Google Drive file uploads using a temp file path (correct approach)."""
-    print("[DEBUG] upload_to_drive_view endpoint hit")
-
-    if request.method == 'POST' and request.FILES.get('file'):
-        uploaded_file = request.FILES['file']
-        print(f"[DEBUG] Received file: {uploaded_file.name}, size: {uploaded_file.size} bytes")
-
-        try:
-            # ✅ Save to temporary file
-            with tempfile.NamedTemporaryFile(delete=False) as tmp:
-                for chunk in uploaded_file.chunks():
-                    tmp.write(chunk)
-                tmp_path = tmp.name
-            print(f"[DEBUG] Temp file saved at: {tmp_path}")
-
-            # ✅ Upload to Google Drive
-            try:
-                file_id = upload_file_to_drive(tmp_path, uploaded_file.name)
-                print(f"[DEBUG] Google Drive returned file ID: {file_id}")
-                os.remove(tmp_path)
-                return JsonResponse({"message": "File uploaded successfully", "file_id": file_id})
-            except Exception as e:
-                os.remove(tmp_path)
-                error_msg = f"Google Drive Upload Failed: {str(e)}"
-                print("[DEBUG] ERROR:", error_msg)
-                print("[DEBUG] Traceback:\n", traceback.format_exc())
-                return JsonResponse({"error": error_msg}, status=500)
-
-        except Exception as e:
-            error_msg = f"Internal Server Error: {str(e)}"
-            print("[DEBUG] ERROR:", error_msg)
-            print("[DEBUG] Traceback:\n", traceback.format_exc())
-            return JsonResponse({"error": error_msg}, status=500)
-
-    print("[DEBUG] No file provided or incorrect HTTP method")
-    return JsonResponse({"error": "No file provided"}, status=400)
+        print(f"[FATAL ERROR] {e}")
+        return JsonResponse({"error": str(e)})
