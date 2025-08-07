@@ -11,7 +11,8 @@ function App() {
   const fetchData = async () => {
     if (!ticker) return;
     try {
-      const response = await fetch(`/api/company/${ticker}/`);
+      //const response = await fetch(`/api/company/${ticker}/`); old version
+      const res = await fetch(`https://findocscollector.onrender.com/api/company/${ticker}`);
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       const json = await response.json();
       console.log("API Response:", json);
@@ -51,7 +52,9 @@ function App() {
   formData.append("file", file);
 
   try {
-    const res = await fetch("/api/upload/", { method: "POST", body: formData });
+    //const res = await fetch("/api/upload/", { method: "POST", body: formData }); old program
+    const res = await fetch("https://findocscollector.onrender.com/api/upload/", { method: "POST", body: formData });
+
     const text = await res.text(); // ✅ Get raw text first
 
     let result;
