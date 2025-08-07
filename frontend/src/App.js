@@ -8,7 +8,7 @@ function App() {
   const [file, setFile] = useState(null);
   const [uploadMessage, setUploadMessage] = useState("");
 
-  // ✅ Fetch company data
+  // ✅ Fetch company data from backend
   const fetchData = async () => {
     try {
       const response = await fetch(`https://findocscollector.onrender.com/api/company/${ticker}`);
@@ -17,30 +17,34 @@ function App() {
         setData(result);
         setError(null);
       } else {
-        setError(result.error || "Data fetch failed.");
+        setError(result.error);
       }
     } catch (err) {
       setError("Failed to fetch data.");
     }
   };
 
-  // ✅ Download JSON to local machine
-  const downloadJSON = () => {
-    if (!data) return;
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${ticker}_data.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+// Download JSON
+const downloadJSON = () => {
+  if (!data) return;
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${ticker}_data.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
 
-  // ✅ Upload file to Google Drive
+  
+
+  
+  // ✅ Upload file to Google Drive via backend
   const handleUpload = async () => {
     if (!file) return;
+
     const formData = new FormData();
     formData.append("file", file);
 
@@ -51,6 +55,7 @@ function App() {
       });
 
       const result = await response.json();
+
       if (response.ok) {
         setUploadMessage(result.message || "Upload successful!");
       } else {
@@ -151,10 +156,7 @@ function App() {
           <p>Average High: {data.analytics.average_high}</p>
           <p>Average Low: {data.analytics.average_low}</p>
           <p>Trend: {data.analytics.trend}</p>
-
-          <button onClick={downloadJSON} className="btn">
-            Download JSON
-          </button>
+        </div>
         </div>
       )}
     </div>
