@@ -1,17 +1,23 @@
 import os
 from pathlib import Path
 
-# ✅ BASE_DIR should point to the project root (FinDocsCollector/)
+# Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ✅ SECRET_KEY & DEBUG
+# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'your-secret-key'
+
+# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# ✅ ALLOWED_HOSTS
-ALLOWED_HOSTS = ['findocscollector.onrender.com']
+ALLOWED_HOSTS = [
+    'findocscollector.onrender.com',
+    'fin-docs-collector.vercel.app',
+    'localhost',
+    '127.0.0.1'
+]
 
-# ✅ Installed Apps
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -19,14 +25,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Third-party
     'rest_framework',
     'corsheaders',
+
+    # Local apps
     'collectors',
 ]
 
-# ✅ Middleware
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # must be high
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -36,18 +45,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# ✅ CORS
-CORS_ALLOW_ALL_ORIGINS = True
-
-# ✅ Main Django paths
 ROOT_URLCONF = 'backend.urls'
-WSGI_APPLICATION = 'backend.wsgi.application'
 
-# ✅ Templates (used to load React build `index.html`)
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'backend' / 'static'],  # ✅ Your React index.html is here
+        'DIRS': [os.path.join(BASE_DIR, 'backend', 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -60,7 +63,9 @@ TEMPLATES = [
     },
 ]
 
-# ✅ Database
+WSGI_APPLICATION = 'backend.wsgi.application'
+
+# Database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -68,22 +73,52 @@ DATABASES = {
     }
 }
 
-# ✅ Locale
+# Password validation
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+# Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# ✅ Static Files (serves React build & collectsstatic for Render)
+# Static files
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'backend' / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'backend', 'static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# ✅ Auto field
+# Media (optional)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# ✅ REST Framework settings
+# CORS and CSRF settings
+CORS_ALLOWED_ORIGINS = [
+    'https://fin-docs-collector.vercel.app',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://fin-docs-collector.vercel.app',
+]
+
+# Django REST Framework (optional)
 REST_FRAMEWORK = {
-    'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer'],
-    'DEFAULT_PARSER_CLASSES': ['rest_framework.parsers.JSONParser'],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ]
 }
