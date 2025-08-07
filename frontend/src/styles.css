@@ -54,6 +54,20 @@ table {
   margin: 15px 0;
 }
 
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+}
+
+th { background: #00478F; color: white; }
+
+.section h3 { margin-top: 15px; }
+
+.section ul { list-style: none; padding: 0; }
+
+.section li { margin: 5px 0; }
+
 .analytics-table {
   width: 100%;
   border-collapse: collapse;
@@ -71,17 +85,3 @@ table {
   text-align: center;
   padding: 8px;
 }
-
-th, td {
-  border: 1px solid #ccc;
-  padding: 8px;
-  text-align: center;
-}
-
-th { background: #00478F; color: white; }
-
-.section h3 { margin-top: 15px; }
-
-.section ul { list-style: none; padding: 0; }
-
-.section li { margin: 5px 0; }
