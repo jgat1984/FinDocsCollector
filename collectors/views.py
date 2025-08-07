@@ -48,8 +48,7 @@ def company_data_view(request, ticker):
 
         # ✅ Transform Data (Analytics, Trends, etc.)
         try:
-            transformer = DataTransformer()
-            transformed = transformer.transform(raw_data)
+            transformed = DataTransformer(raw_data).transform()
             raw_data.update(transformed)
         except Exception as e:
             print(f"[ERROR] Data transformation failed: {e}")
