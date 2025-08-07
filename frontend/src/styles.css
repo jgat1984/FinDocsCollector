@@ -48,25 +48,6 @@ button:hover { background: #003366; }
 
 .results { margin-top: 20px; }
 
-.analytics-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 10px 0;
-}
-
-.analytics-table th {
-  background: #00478F;
-  color: white;
-  padding: 8px;
-}
-
-.analytics-table td {
-  border: 1px solid #ccc;
-  text-align: center;
-  padding: 8px;
-}
-
-
 table {
   width: 100%;
   border-collapse: collapse;
@@ -87,3 +68,20 @@ th { background: #00478F; color: white; }
 
 .section li { margin: 5px 0; }
 
+.analytics-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+}
+
+.analytics-table th {
+  background: #00478F;
+  color: white;
+  padding: 8px;
+}
+
+.analytics-table td {
+  border: 1px solid #ccc;
+  text-align: center;
+  padding: 8px;
+}
