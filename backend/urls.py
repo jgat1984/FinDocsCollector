@@ -2,6 +2,8 @@
 from django.urls import path, include
 from django.views.generic import TemplateView
 from django.urls import path, include, re_path
+from collectors.views import company_data_view
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
