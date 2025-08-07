@@ -12,7 +12,7 @@ function App() {
     if (!ticker) return;
     try {
       //const response = await fetch(`/api/company/${ticker}/`); old version
-      const res = await fetch(`https://findocscollector.onrender.com/api/company/${ticker}`);
+      const response = await fetch(`https://findocscollector.onrender.com/api/company/${ticker}`);
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       const json = await response.json();
       console.log("API Response:", json);
