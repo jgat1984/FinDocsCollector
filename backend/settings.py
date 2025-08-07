@@ -10,7 +10,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'backend/static')]
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'your-secret-key'
 DEBUG = True
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['findocscollector.onrender.com']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
