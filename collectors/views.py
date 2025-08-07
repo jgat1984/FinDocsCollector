@@ -1,6 +1,9 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
+import os
+import traceback
+
 from .yahoo_collector import fetch_yahoo_data
 from .sec_collector import fetch_sec_filings
 from .marketwatch_collector import fetch_marketwatch_info
@@ -56,3 +59,29 @@ def company_data_view(request, ticker):
     except Exception as e:
         print(f"[FATAL ERROR] {e}")
         return JsonResponse({"error": str(e)})
+
+@csrf_exempt
+def upload_to_drive(request):
+    try:
+        if request.method == "POST" and request.FILES.get("file"):
+            uploaded_file = request.FILES["file"]
+
+            # Save file temporarily
+            temp_path = os.path.join("/tmp", uploaded_file.name)
+            with open(temp_path, "wb+") as f:
+                for chunk in uploaded_file.chunks():
+                    f.write(chunk)
+
+            # Upload to Google Drive
+            file_id = upload_file_to_drive(temp_path, file_name=uploaded_file.name)
+
+            # Clean up
+            os.remove(temp_path)
+
+            return JsonResponse({"message": "Upload successful", "file_id": file_id})
+
+        return JsonResponse({"error": "No file provided"}, status=400)
+
+    except Exception as e:
+        print("[ERROR] Upload failed:", traceback.format_exc())
+        return JsonResponse({"error": "Internal server error"}, status=500)
