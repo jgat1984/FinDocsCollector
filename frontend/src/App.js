@@ -5,33 +5,48 @@ function App() {
   const [ticker, setTicker] = useState("");
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
+  const [file, setFile] = useState(null);
+  const [uploadMessage, setUploadMessage] = useState("");
 
   const fetchData = async () => {
     try {
-      const res = await fetch(`https://findocscollector.onrender.com/api/company/${ticker}`);
+      const res = await fetch(`/api/company/${ticker}`);
       const result = await res.json();
       if (res.ok) {
         setData(result);
         setError(null);
       } else {
-        setError(result.error || "Failed to fetch data.");
+        setError(result.error);
+        setData(null);
       }
     } catch (err) {
-      console.error("[Fetch Error]", err);
       setError("Failed to fetch data.");
     }
   };
 
-  const downloadJSON = () => {
-    if (!data) return;
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
-    });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${ticker}_data.json`;
-    a.click();
+  const handleFileUpload = async () => {
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/upload/", {
+        method: "POST",
+        body: formData
+      });
+      const result = await res.json();
+      if (res.ok) {
+        setUploadMessage("File uploaded successfully!");
+      } else {
+        setUploadMessage(result.error || "Upload failed");
+      }
+    } catch (err) {
+      setUploadMessage("Error uploading file.");
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") fetchData();
   };
 
   return (
@@ -41,79 +56,67 @@ function App() {
       <div className="search-box">
         <input
           type="text"
-          placeholder="Enter ticker..."
+          placeholder="Enter stock ticker"
           value={ticker}
           onChange={(e) => setTicker(e.target.value)}
-          onKeyPress={(e) => e.key === "Enter" && fetchData()}
+          onKeyDown={handleKeyPress}
         />
         <button onClick={fetchData}>Fetch</button>
-        <button onClick={downloadJSON}>Download JSON</button>
-      </div>
-
-      {/* Upload hidden */}
-      <div className="upload-box hidden">
-        <input type="file" onChange={() => {}} />
-        <button>Upload to Google Drive</button>
       </div>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       {data && (
-        <>
-          <h2>{data.ticker} – ${data.price}</h2>
+        <div className="results">
+          <h2>{data.ticker}</h2>
+          <p><strong>Price:</strong> ${data.price}</p>
 
-          <h3>Price Ranges</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Period</th>
-                <th>High</th>
-                <th>Low</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>7d</td>
-                <td>{data["7d_high"]}</td>
-                <td>{data["7d_low"]}</td>
-              </tr>
-              <tr>
-                <td>1m</td>
-                <td>{data["1m_high"]}</td>
-                <td>{data["1m_low"]}</td>
-              </tr>
-              <tr>
-                <td>3m</td>
-                <td>{data["3m_high"]}</td>
-                <td>{data["3m_low"]}</td>
-              </tr>
-              <tr>
-                <td>1y</td>
-                <td>{data["1y_high"]}</td>
-                <td>{data["1y_low"]}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="key-data">
+            <p><strong>7D High:</strong> {data["7d_high"]}</p>
+            <p><strong>7D Low:</strong> {data["7d_low"]}</p>
+            <p><strong>1M High:</strong> {data["1m_high"]}</p>
+            <p><strong>1M Low:</strong> {data["1m_low"]}</p>
+            <p><strong>3M High:</strong> {data["3m_high"]}</p>
+            <p><strong>3M Low:</strong> {data["3m_low"]}</p>
+            <p><strong>1Y High:</strong> {data["1y_high"]}</p>
+            <p><strong>1Y Low:</strong> {data["1y_low"]}</p>
+          </div>
 
-          <h3>Analytics</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Average High</th>
-                <th>Average Low</th>
-                <th>Trend</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{data.avg_high}</td>
-                <td>{data.avg_low}</td>
-                <td>{data.trend}</td>
-              </tr>
-            </tbody>
-          </table>
-        </>
+          <div className="analytics">
+            {data.analytics && <pre>{JSON.stringify(data.analytics, null, 2)}</pre>}
+          </div>
+
+          <div className="sec-filings">
+            <h3>SEC Filings</h3>
+            <ul>
+              {data.sec_filings.map((f, idx) => (
+                <li key={idx}><a href={f.link} target="_blank" rel="noreferrer">{f.title}</a> — {new Date(f.date).toLocaleDateString()}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="news">
+            <h3>Market News</h3>
+            <ul>
+              {data.market_news.map((n, idx) => (
+                <li key={idx}><a href={n.link} target="_blank" rel="noreferrer">{n.title}</a></li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="transcript">
+            <h3>Earnings Transcript</h3>
+            <p>{data.earnings_transcript.summary}</p>
+            <a href={data.earnings_transcript.link} target="_blank" rel="noreferrer">Read full transcript</a>
+          </div>
+        </div>
       )}
+
+      <div className="upload-box">
+        <input type="file" onChange={(e) => setFile(e.target.files[0])} />
+        <button onClick={handleFileUpload}>Upload to Drive</button>
+      </div>
+      {uploadMessage && <p>{uploadMessage}</p>}
     </div>
   );
 }
