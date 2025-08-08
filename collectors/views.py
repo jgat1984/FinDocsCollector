@@ -1,4 +1,4 @@
-from django.http import JsonResponse 
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import os
 import traceback
@@ -17,35 +17,26 @@ def company_data_view(request, ticker):
         print("=" * 60)
         print(f"[INFO] Request received for ticker: {ticker}")
 
-        # ✅ Yahoo Finance Data
-        print("[DEBUG] Fetching Yahoo Finance data...")
+        # Yahoo Finance
         raw_data = fetch_yahoo_data(ticker)
-        print("[DEBUG] Yahoo Finance data fetched successfully")
 
-        # ✅ SEC Filings
+        # SEC Filings
         try:
-            print("[DEBUG] Fetching SEC filings...")
             raw_data["sec_filings"] = fetch_sec_filings(ticker)
-            print(f"[DEBUG] SEC filings fetched: {len(raw_data['sec_filings'])} items")
         except Exception as e:
             print(f"[ERROR] SEC fetch failed: {e}")
             raw_data["sec_filings"] = []
 
-        # ✅ MarketWatch News
+        # MarketWatch
         try:
-            print("[DEBUG] Fetching MarketWatch news...")
-            news_data = fetch_marketwatch_info(ticker)
-            print(f"[DEBUG] MarketWatch returned {len(news_data)} articles")
-            raw_data["market_news"] = news_data
+            raw_data["market_news"] = fetch_marketwatch_info(ticker)
         except Exception as e:
             print(f"[ERROR] MarketWatch failed: {e}")
             raw_data["market_news"] = []
 
-        # ✅ Earnings Transcript
+        # Earnings Transcript
         try:
-            print("[DEBUG] Fetching earnings transcript...")
             raw_data["earnings_transcript"] = fetch_earnings_transcript(ticker)
-            print("[DEBUG] Earnings transcript fetched successfully")
         except Exception as e:
             print(f"[ERROR] Earnings transcript failed: {e}")
             raw_data["earnings_transcript"] = {
@@ -53,12 +44,10 @@ def company_data_view(request, ticker):
                 "link": f"https://seekingalpha.com/symbol/{ticker}/earnings/transcripts"
             }
 
-        # ✅ Transform Data (Analytics, Trends, etc.)
+        # Transform Data
         try:
-            print("[DEBUG] Transforming data...")
             transformed = DataTransformer(raw_data).transform()
             raw_data.update(transformed)
-            print("[DEBUG] Data transformed successfully")
         except Exception as e:
             print(f"[ERROR] Data transformation failed: {e}")
 
@@ -66,8 +55,7 @@ def company_data_view(request, ticker):
 
     except Exception as e:
         print(f"[FATAL ERROR] {e}")
-        print(traceback.format_exc())
-        return JsonResponse({"error": str(e)})
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 @csrf_exempt
@@ -77,37 +65,26 @@ def upload_to_drive(request):
 
     try:
         if request.method != "POST":
-            print("[DEBUG] Invalid HTTP method:", request.method)
             return JsonResponse({"error": "POST request required"}, status=405)
 
         if not request.FILES.get("file"):
-            print("[DEBUG] No file found in request.FILES")
             return JsonResponse({"error": "No file provided"}, status=400)
 
         uploaded_file = request.FILES["file"]
-        print(f"[DEBUG] File received: {uploaded_file.name}, size: {uploaded_file.size} bytes")
-
-        # Save file temporarily
         temp_path = os.path.join("/tmp", uploaded_file.name)
-        print(f"[DEBUG] Saving file temporarily to: {temp_path}")
+
         with open(temp_path, "wb+") as f:
             for chunk in uploaded_file.chunks():
                 f.write(chunk)
 
-        print("[DEBUG] File saved locally. Starting Google Drive upload...")
         file_id = upload_file_to_drive(temp_path, file_name=uploaded_file.name)
-        print(f"[DEBUG] Google Drive upload successful. File ID: {file_id}")
-
-        # Clean up
         os.remove(temp_path)
-        print("[DEBUG] Temporary file deleted after upload")
+
+        if not file_id:
+            return JsonResponse({"error": "Google Drive upload failed"}, status=500)
 
         return JsonResponse({"message": "Upload successful", "file_id": file_id})
 
     except Exception as e:
-        print("[ERROR] Upload failed!")
-        print(traceback.format_exc())
-        return JsonResponse({
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }, status=500)
+        print("[ERROR] Upload failed:", traceback.format_exc())
+        return JsonResponse({"error": str(e)}, status=500)
