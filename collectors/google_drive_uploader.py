@@ -1,5 +1,3 @@
-//google_drive_uploader
-
 import os
 import mimetypes
 from google.oauth2 import service_account
