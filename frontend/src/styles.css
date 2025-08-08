@@ -20,16 +20,14 @@ h1 {
   text-align: center;
 }
 
-.search-box,
-.upload-box {
+.search-box, .upload-box {
   display: flex;
   justify-content: center;
   margin: 10px 0;
   gap: 10px;
 }
 
-input[type="text"],
-input[type="file"] {
+input[type="text"], input[type="file"] {
   padding: 8px;
   font-size: 16px;
 }
@@ -40,31 +38,31 @@ button {
   background: #00478F;
   color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
 }
 
 button:hover {
-  background: #003f7a;
+  opacity: 0.9;
 }
 
-.results {
+table {
+  width: 100%;
+  border-collapse: collapse;
   margin-top: 20px;
 }
 
-.results h2 {
-  text-transform: uppercase;
+th, td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: center;
 }
 
-.key-data,
-.analytics,
-.sec-filings,
-.news,
-.transcript {
-  margin-top: 15px;
+th {
+  background: #00478F;
+  color: white;
 }
 
-ul {
-  list-style-type: disc;
-  margin-left: 20px;
+.hidden {
+  display: none;
 }
