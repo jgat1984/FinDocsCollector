@@ -65,7 +65,7 @@ def company_data_view(request, ticker):
 #     return JsonResponse({"error": "This endpoint is deprecated. Use /api/upload/ instead."}, status=410)
 
 
-# ✅ CORRECT UPLOAD ENDPOINT
+# ✅ Old CORRECT UPLOAD ENDPOINT
 @csrf_exempt
 def upload_to_drive(request):
     """Handles Google Drive file uploads using a temp file path (correct approach)."""

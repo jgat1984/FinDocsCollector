@@ -1,0 +1,96 @@
+{
+  "ticker": "MSFT",
+  "price": 520.84,
+  "7d_high": 555.45,
+  "7d_low": 509.44,
+  "1m_high": 555.45,
+  "1m_low": 494.11,
+  "3m_high": 555.45,
+  "3m_low": 434.86,
+  "1y_high": 555.45,
+  "1y_low": 344.16,
+  "sec_filings": [
+    {
+      "title": "10-K  - Annual report [Section 13 and 15(d), not S-K Item 405]",
+      "date": "2025-07-30",
+      "link": "https://www.sec.gov/Archives/edgar/data/789019/000095017025100235/0000950170-25-100235-index.htm"
+    },
+    {
+      "title": "8-K  - Current report",
+      "date": "2025-07-30",
+      "link": "https://www.sec.gov/Archives/edgar/data/789019/000095017025100226/0000950170-25-100226-index.htm"
+    },
+    {
+      "title": "PX14A6G  - Notice of exempt solicitation submitted by non-management",
+      "date": "2025-07-25",
+      "link": "https://www.sec.gov/Archives/edgar/data/789019/000121465925010900/0001214659-25-010900-index.htm"
+    },
+    {
+      "title": "PX14A6G  - Notice of exempt solicitation submitted by non-management",
+      "date": "2025-07-24",
+      "link": "https://www.sec.gov/Archives/edgar/data/789019/000121465925010874/0001214659-25-010874-index.htm"
+    },
+    {
+      "title": "8-K  - Current report",
+      "date": "2025-07-01",
+      "link": "https://www.sec.gov/Archives/edgar/data/789019/000119312525154103/0001193125-25-154103-index.htm"
+    },
+    {
+      "title": "11-K  - Annual report of employee stock purchase, savings and similar plans",
+      "date": "2025-06-23",
+      "link": "https://www.sec.gov/Archives/edgar/data/789019/000095017025088984/0000950170-25-088984-index.htm"
+    },
+    {
+      "title": "11-K  - Annual report of employee stock purchase, savings and similar plans",
+      "date": "2025-06-23",
+      "link": "https://www.sec.gov/Archives/edgar/data/789019/000119312525144646/0001193125-25-144646-index.htm"
+    },
+    {
+      "title": "SD  - Specialized disclosure report",
+      "date": "2025-05-30",
+      "link": "https://www.sec.gov/Archives/edgar/data/789019/000119312525131961/0001193125-25-131961-index.htm"
+    },
+    {
+      "title": "10-Q  - Quarterly report [Sections 13 or 15(d)]",
+      "date": "2025-04-30",
+      "link": "https://www.sec.gov/Archives/edgar/data/789019/000095017025061046/0000950170-25-061046-index.htm"
+    },
+    {
+      "title": "8-K  - Current report",
+      "date": "2025-04-30",
+      "link": "https://www.sec.gov/Archives/edgar/data/789019/000095017025061032/0000950170-25-061032-index.htm"
+    }
+  ],
+  "market_news": [
+    {
+      "title": "Trade Desk’s stock tumbles after earnings. Are investors being too harsh?",
+      "link": "https://www.marketwatch.com/story/trade-desks-stock-tumbles-after-earnings-are-investors-being-too-harsh-2a5d621d?mod=mw_rss_topstories"
+    },
+    {
+      "title": "How options trading in Palantir, Uber and Fortinet gave clues to the stocks’ postearnings moves",
+      "link": "https://www.marketwatch.com/story/how-options-trading-in-palantir-uber-and-fortinet-offers-clues-to-the-stocks-postearnings-moves-8284a198?mod=mw_rss_topstories"
+    },
+    {
+      "title": "‘I have never been asked for money before’: My friend wants to borrow $1,600 to pay her rent. Do I say yes?",
+      "link": "https://www.marketwatch.com/story/i-have-never-been-asked-for-money-before-my-friend-wants-to-borrow-1-600-to-pay-her-rent-do-i-say-yes-5c67148f?mod=mw_rss_topstories"
+    },
+    {
+      "title": "I’m ready to invest in crypto with my 401(k). So why can’t I do it yet?",
+      "link": "https://www.marketwatch.com/story/im-ready-to-invest-in-crypto-with-my-401-k-so-why-cant-i-do-it-yet-ad248ee9?mod=mw_rss_topstories"
+    },
+    {
+      "title": "Block’s stock pops after earnings, as its two financial engines reignite",
+      "link": "https://www.marketwatch.com/story/blocks-stock-pops-after-earnings-as-its-two-financial-engines-reignite-2b71e1f3?mod=mw_rss_topstories"
+    }
+  ],
+  "earnings_transcript": {
+    "summary": "Transcript not available",
+    "link": "https://seekingalpha.com/symbol/msft/earnings/transcripts"
+  },
+  "analytics": {
+    "average_high": 555.45,
+    "average_low": 445.64,
+    "trend": "Bearish"
+  },
+  "last_updated": "2025-08-07T21:20:57.356246"
+}
