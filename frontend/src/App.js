@@ -76,11 +76,19 @@ function App() {
       <button onClick={fetchData}>Fetch</button>
       <button onClick={downloadJSON} disabled={!data}>Download JSON</button>
 
-      {/* Upload */}
-      <div>
-        <input type="file" onChange={(e) => setFile(e.target.files[0])} />
+      //{/* Upload */}
+      //<div>
+        //<input type="file" onChange={(e) => setFile(e.target.files[0])} />
+        //<button onClick={handleUpload}>Upload to Google Drive</button>
+        //{uploadMessage && <p className="upload-message">{uploadMessage}</p>}
+      //</div>
+
+      {/* Hiding Upload UI for now */}
+      <div className="upload-box hidden">
+        <input
+        type="file"
+        onChange={(e) => setFile(e.target.files[0])} />
         <button onClick={handleUpload}>Upload to Google Drive</button>
-        {uploadMessage && <p className="upload-message">{uploadMessage}</p>}
       </div>
 
       {error && <p className="error">{error}</p>}
