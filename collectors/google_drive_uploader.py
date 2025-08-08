@@ -4,6 +4,8 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 import os
 
+print("📢 Script is running...")
+
 # OAuth scope — allows file upload to user's Drive
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
 
