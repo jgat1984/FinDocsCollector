@@ -8,7 +8,6 @@ function App() {
   const [file, setFile] = useState(null);
   const [uploadMessage, setUploadMessage] = useState("");
 
-  // Fetch company data
   const fetchData = async () => {
     try {
       const response = await fetch(`https://findocscollector.onrender.com/api/company/${ticker}`);
@@ -24,12 +23,9 @@ function App() {
     }
   };
 
-  // Download JSON
   const downloadJSON = () => {
     if (!data) return;
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
-    });
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -38,7 +34,6 @@ function App() {
     URL.revokeObjectURL(url);
   };
 
-  // Upload file to Google Drive
   const handleUpload = async () => {
     if (!file) return;
     const formData = new FormData();
@@ -52,7 +47,7 @@ function App() {
 
       const result = await response.json();
       if (response.ok) {
-        setUploadMessage(result.message || "Upload successful!");
+        setUploadMessage(result.message + " ✅");
       } else {
         setUploadMessage(result.error || "Upload failed.");
       }
@@ -65,7 +60,6 @@ function App() {
     <div className="container">
       <h1>FinDocsCollector</h1>
 
-      {/* Search */}
       <input
         type="text"
         value={ticker}
@@ -76,7 +70,6 @@ function App() {
       <button onClick={fetchData}>Fetch</button>
       <button onClick={downloadJSON} disabled={!data}>Download JSON</button>
 
-      {/* Upload */}
       <div>
         <input type="file" onChange={(e) => setFile(e.target.files[0])} />
         <button onClick={handleUpload}>Upload to Google Drive</button>
@@ -89,51 +82,25 @@ function App() {
         <div className="results">
           <h2>{data.ticker} – ${Number(data.price || 0).toFixed(2)}</h2>
 
-          {/* Price Ranges Table */}
           <h3>Price Ranges</h3>
           <table>
             <thead>
-              <tr>
-                <th>Period</th>
-                <th>High</th>
-                <th>Low</th>
-              </tr>
+              <tr><th>Period</th><th>High</th><th>Low</th></tr>
             </thead>
             <tbody>
-              <tr>
-                <td>7d</td>
-                <td>{data["7d_high"]}</td>
-                <td>{data["7d_low"]}</td>
-              </tr>
-              <tr>
-                <td>1m</td>
-                <td>{data["1m_high"]}</td>
-                <td>{data["1m_low"]}</td>
-              </tr>
-              <tr>
-                <td>3m</td>
-                <td>{data["3m_high"]}</td>
-                <td>{data["3m_low"]}</td>
-              </tr>
-              <tr>
-                <td>1y</td>
-                <td>{data["1y_high"]}</td>
-                <td>{data["1y_low"]}</td>
-              </tr>
+              <tr><td>7d</td><td>{data["7d_high"]}</td><td>{data["7d_low"]}</td></tr>
+              <tr><td>1m</td><td>{data["1m_high"]}</td><td>{data["1m_low"]}</td></tr>
+              <tr><td>3m</td><td>{data["3m_high"]}</td><td>{data["3m_low"]}</td></tr>
+              <tr><td>1y</td><td>{data["1y_high"]}</td><td>{data["1y_low"]}</td></tr>
             </tbody>
           </table>
 
-          {/* Analytics Table */}
           {data.analytics && (
             <>
               <h3>Analytics</h3>
               <table>
                 <thead>
-                  <tr>
-                    <th>Average High</th>
-                    <th>Average Low</th>
-                    <th>Trend</th>
-                  </tr>
+                  <tr><th>Average High</th><th>Average Low</th><th>Trend</th></tr>
                 </thead>
                 <tbody>
                   <tr>
@@ -146,7 +113,6 @@ function App() {
             </>
           )}
 
-          {/* SEC Filings */}
           <h3>SEC Filings</h3>
           <ul>
             {data.sec_filings.map((filing, idx) => (
@@ -158,7 +124,6 @@ function App() {
             ))}
           </ul>
 
-          {/* Market News */}
           <h3>Market News</h3>
           <ul>
             {data.market_news.map((item, idx) => (
@@ -170,7 +135,6 @@ function App() {
             ))}
           </ul>
 
-          {/* Earnings Transcript */}
           {data.earnings_transcript && (
             <>
               <h3>Earnings Transcript</h3>
