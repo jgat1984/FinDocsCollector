@@ -1,54 +1,44 @@
 import os
-import mimetypes
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
-# Constants
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CREDENTIALS_PATH = os.path.join(BASE_DIR, "../credentials.json")  # Adjust path if needed
-FOLDER_ID = '1fAwIJq2od7nMYPEojHDBYN3zsdIzpseZ'  # Your actual FinDocsUploads folder ID
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
+# Load from environment or place your service account JSON path here
+SERVICE_ACCOUNT_FILE = 'collectors/credentials.json'
 
-# Initialize Drive service
-def get_drive_service():
-    creds = service_account.Credentials.from_service_account_file(
-        CREDENTIALS_PATH, scopes=SCOPES
-    )
-    return build('drive', 'v3', credentials=creds)
+# Define the Shared Drive ID and folder ID (both required for service accounts)
+SHARED_DRIVE_ID = 'your_shared_drive_id_here'
+SHARED_FOLDER_ID = 'your_shared_drive_folder_id_here'
 
-# Upload file function
-def upload_file_to_drive(file_path, file_name=None, mime_type=None, folder_id=FOLDER_ID):
-    """
-    Uploads a file to Google Drive (into your shared folder).
-    :param file_path: Path to the local file
-    :param file_name: Custom file name (optional)
-    :param mime_type: File type (auto-detected if None)
-    :param folder_id: Google Drive folder ID
-    :return: File ID or None
-    """
+def upload_file_to_drive(file_path, file_name):
+    """Uploads a file to Google Drive Shared Folder using Service Account"""
     try:
-        service = get_drive_service()
-        file_name = file_name or os.path.basename(file_path)
-        mime_type = mime_type or mimetypes.guess_type(file_path)[0] or 'application/octet-stream'
+        credentials = service_account.Credentials.from_service_account_file(
+            SERVICE_ACCOUNT_FILE,
+            scopes=['https://www.googleapis.com/auth/drive']
+        )
+
+        service = build('drive', 'v3', credentials=credentials)
 
         file_metadata = {
             'name': file_name,
-            'parents': [folder_id]
+            'parents': [SHARED_FOLDER_ID],
+            'driveId': SHARED_DRIVE_ID,
+            'supportsAllDrives': True
         }
 
-        media = MediaFileUpload(file_path, mimetype=mime_type, resumable=True)
+        media = MediaFileUpload(file_path, resumable=True)
 
         uploaded_file = service.files().create(
             body=file_metadata,
             media_body=media,
-            fields='id, webViewLink'
+            fields='id, webViewLink',
+            supportsAllDrives=True
         ).execute()
 
-        print(f"✅ Uploaded: {file_name}")
-        print(f"🔗 View it here: {uploaded_file['webViewLink']}")
-        return uploaded_file.get('id')
+        print(f"[✅] File uploaded: {uploaded_file.get('webViewLink')}")
+        return uploaded_file
 
     except Exception as e:
-        print(f"❌ Upload failed: {e}")
+        print(f"[❌] Upload failed: {e}")
         return None
