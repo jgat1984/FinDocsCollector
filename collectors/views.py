@@ -71,7 +71,9 @@ def upload_to_drive(request):
             return JsonResponse({"error": "No file provided"}, status=400)
 
         uploaded_file = request.FILES["file"]
-        temp_path = os.path.join("/tmp", uploaded_file.name)
+        temp_dir = os.path.join(os.path.dirname(__file__), "temp_uploads")
+        os.makedirs(temp_dir, exist_ok=True)
+        temp_path = os.path.join(temp_dir, uploaded_file.name)
 
         with open(temp_path, "wb+") as f:
             for chunk in uploaded_file.chunks():
@@ -83,7 +85,10 @@ def upload_to_drive(request):
         if not file_id:
             return JsonResponse({"error": "Google Drive upload failed"}, status=500)
 
-        return JsonResponse({"message": "Upload successful", "file_id": file_id})
+        return JsonResponse({
+            "message": "Upload successful",
+            "file_id": file_id
+        })
 
     except Exception as e:
         print("[ERROR] Upload failed:", traceback.format_exc())
