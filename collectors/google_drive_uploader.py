@@ -1,39 +1,33 @@
-# google_drive_uploader.py
+//google_drive_uploader
 
 import os
 import mimetypes
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
+from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
 # Constants
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CREDENTIALS_PATH = os.path.join(BASE_DIR, "../credentials.json")
-TOKEN_PATH = os.path.join(BASE_DIR, "token.json")  # Will be created after first login
+CREDENTIALS_PATH = os.path.join(BASE_DIR, "../credentials.json")  # Adjust path if needed
+FOLDER_ID = '1fAwIJq2od7nMYPEojHDBYN3zsdIzpseZ'  # Your actual FinDocsUploads folder ID
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
-FOLDER_ID = '1fAwIJq2od7nMYPEojHDBYN3zsdIzpseZ'  # Your My Drive folder
 
-# Get authorized Google Drive service using OAuth
+# Initialize Drive service
 def get_drive_service():
-    creds = None
-    if os.path.exists(TOKEN_PATH):
-        creds = Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_PATH, SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open(TOKEN_PATH, 'w') as token:
-            token.write(creds.to_json())
-
+    creds = service_account.Credentials.from_service_account_file(
+        CREDENTIALS_PATH, scopes=SCOPES
+    )
     return build('drive', 'v3', credentials=creds)
 
 # Upload file function
 def upload_file_to_drive(file_path, file_name=None, mime_type=None, folder_id=FOLDER_ID):
     """
-    Uploads a file to your personal Google Drive folder.
+    Uploads a file to Google Drive (into your shared folder).
+    :param file_path: Path to the local file
+    :param file_name: Custom file name (optional)
+    :param mime_type: File type (auto-detected if None)
+    :param folder_id: Google Drive folder ID
+    :return: File ID or None
     """
     try:
         service = get_drive_service()
@@ -61,5 +55,5 @@ def upload_file_to_drive(file_path, file_name=None, mime_type=None, folder_id=FO
         print(f"❌ Upload failed: {e}")
         return None
 
-# Optional test run
+# Optional test:
 # upload_file_to_drive("test_upload.txt")
