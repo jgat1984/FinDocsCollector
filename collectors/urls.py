@@ -1,13 +1,19 @@
-from django.urls import path
-from . import views
+from django.contrib import admin
+from django.urls import path, include
+from django.http import JsonResponse
 
-print("[DEBUG] collectors/urls.py loaded — API routes registered")
+# ✅ Custom JSON error handlers
+def custom_404(request, exception):
+    return JsonResponse({"error": "Not found"}, status=404)
+
+def custom_500(request):
+    return JsonResponse({"error": "Internal server error"}, status=500)
 
 urlpatterns = [
-    path('company/<str:ticker>/', views.company_data_view, name='company_data'),
-    path('upload/', views.upload_to_drive, name='upload_to_drive'),  # ✅ Google Drive Upload API
+    path('admin/', admin.site.urls),
+    path('api/', include('collectors.urls')),
 ]
 
-print("[DEBUG] collectors/urls.py — urlpatterns set:")
-for pattern in urlpatterns:
-    print(f"    [DEBUG] Route registered: {pattern}")
+# ✅ Ensure all errors return JSON
+handler404 = "backend.urls.custom_404"
+handler500 = "backend.urls.custom_500"
