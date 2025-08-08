@@ -85,3 +85,8 @@ th { background: #00478F; color: white; }
   text-align: center;
   padding: 8px;
 }
+
+.hidden {
+  display: none;
+}
+
