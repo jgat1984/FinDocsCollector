@@ -14,9 +14,10 @@ function App() {
         setData(result);
         setError(null);
       } else {
-        setError(result.error);
+        setError(result.error || "Failed to fetch data.");
       }
     } catch (err) {
+      console.error("[Fetch Error]", err);
       setError("Failed to fetch data.");
     }
   };
@@ -49,7 +50,7 @@ function App() {
         <button onClick={downloadJSON}>Download JSON</button>
       </div>
 
-      {/* Hidden Upload UI */}
+      {/* Upload hidden */}
       <div className="upload-box hidden">
         <input type="file" onChange={() => {}} />
         <button>Upload to Google Drive</button>
