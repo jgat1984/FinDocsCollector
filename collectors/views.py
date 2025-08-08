@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+
 import os
 import traceback
 
@@ -10,31 +11,32 @@ from .earnings_transcript_collector import fetch_earnings_transcript
 from .transformer import DataTransformer
 from .google_drive_uploader import upload_file_to_drive
 
-
 @csrf_exempt
 def company_data_view(request, ticker):
     try:
         print("=" * 60)
         print(f"[INFO] Request received for ticker: {ticker}")
 
-        # Yahoo Finance
+        # ✅ Yahoo Finance Data
         raw_data = fetch_yahoo_data(ticker)
 
-        # SEC Filings
+        # ✅ SEC Filings
         try:
             raw_data["sec_filings"] = fetch_sec_filings(ticker)
         except Exception as e:
             print(f"[ERROR] SEC fetch failed: {e}")
             raw_data["sec_filings"] = []
 
-        # MarketWatch
+        # ✅ MarketWatch News
         try:
-            raw_data["market_news"] = fetch_marketwatch_info(ticker)
+            news_data = fetch_marketwatch_info(ticker)
+            print("[DEBUG] MarketWatch returned:", news_data)
+            raw_data["market_news"] = news_data
         except Exception as e:
             print(f"[ERROR] MarketWatch failed: {e}")
             raw_data["market_news"] = []
 
-        # Earnings Transcript
+        # ✅ Earnings Transcript
         try:
             raw_data["earnings_transcript"] = fetch_earnings_transcript(ticker)
         except Exception as e:
@@ -44,7 +46,7 @@ def company_data_view(request, ticker):
                 "link": f"https://seekingalpha.com/symbol/{ticker}/earnings/transcripts"
             }
 
-        # Transform Data
+        # ✅ Transform Data (Analytics, Trends, etc.)
         try:
             transformed = DataTransformer(raw_data).transform()
             raw_data.update(transformed)
@@ -55,36 +57,30 @@ def company_data_view(request, ticker):
 
     except Exception as e:
         print(f"[FATAL ERROR] {e}")
-        return JsonResponse({"error": str(e)}, status=500)
-
+        return JsonResponse({"error": str(e)})
 
 @csrf_exempt
 def upload_to_drive(request):
-    print("=" * 60)
-    print("[DEBUG] upload_to_drive function triggered")
-
     try:
-        if request.method != "POST":
-            return JsonResponse({"error": "POST request required"}, status=405)
+        if request.method == "POST" and request.FILES.get("file"):
+            uploaded_file = request.FILES["file"]
 
-        if not request.FILES.get("file"):
-            return JsonResponse({"error": "No file provided"}, status=400)
+            # Save file temporarily
+            temp_path = os.path.join("/tmp", uploaded_file.name)
+            with open(temp_path, "wb+") as f:
+                for chunk in uploaded_file.chunks():
+                    f.write(chunk)
 
-        uploaded_file = request.FILES["file"]
-        temp_path = os.path.join("/tmp", uploaded_file.name)
+            # Upload to Google Drive
+            file_id = upload_file_to_drive(temp_path, file_name=uploaded_file.name)
 
-        with open(temp_path, "wb+") as f:
-            for chunk in uploaded_file.chunks():
-                f.write(chunk)
+            # Clean up
+            os.remove(temp_path)
 
-        file_id = upload_file_to_drive(temp_path, file_name=uploaded_file.name)
-        os.remove(temp_path)
+            return JsonResponse({"message": "Upload successful", "file_id": file_id})
 
-        if not file_id:
-            return JsonResponse({"error": "Google Drive upload failed"}, status=500)
-
-        return JsonResponse({"message": "Upload successful", "file_id": file_id})
+        return JsonResponse({"error": "No file provided"}, status=400)
 
     except Exception as e:
         print("[ERROR] Upload failed:", traceback.format_exc())
-        return JsonResponse({"error": str(e)}, status=500)
+        return JsonResponse({"error": "Internal server error"}, status=500)
