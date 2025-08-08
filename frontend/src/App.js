@@ -8,7 +8,7 @@ function App() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch(`/api/company/${ticker}`);
+      const res = await fetch(`https://findocscollector.onrender.com/api/company/${ticker}`);
       const result = await res.json();
       if (res.ok) {
         setData(result);
