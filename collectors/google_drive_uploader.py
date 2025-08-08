@@ -1,61 +1,43 @@
-import os
-import mimetypes
-from google.oauth2 import service_account
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
+import os
 
-# Constants
-CREDENTIALS_PATH = "/etc/secrets/credentials.json"  # ✅ Secure path on Render
-FOLDER_ID = '1fAwIJq2od7nMYPEojHDBYN3zsdIzpseZ'      # ✅ Your Google Drive folder
+# OAuth scope — allows file upload to user's Drive
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
 
-# Initialize Google Drive API service
-def get_drive_service():
-    try:
-        print(f"[DEBUG] Looking for credentials at: {CREDENTIALS_PATH}")
-        creds = service_account.Credentials.from_service_account_file(
-            CREDENTIALS_PATH, scopes=SCOPES
-        )
-        service = build('drive', 'v3', credentials=creds)
-        print("[DEBUG] Google Drive service initialized.")
-        return service
-    except Exception as e:
-        print("[ERROR] Failed to initialize Google Drive service")
-        raise e
+def upload_file_to_drive(file_path, folder_id):
+    creds = None
 
-# Upload file to Google Drive
-def upload_file_to_drive(file_path, file_name=None, mime_type=None, folder_id=FOLDER_ID):
-    """
-    Uploads a file to Google Drive inside the specified folder.
-    :param file_path: Local path to the file
-    :param file_name: Desired name on Drive (defaults to filename)
-    :param mime_type: MIME type (auto-detected if not specified)
-    :param folder_id: Drive folder ID
-    :return: Uploaded file ID or None
-    """
-    try:
-        print(f"[DEBUG] Starting upload for: {file_path}")
-        service = get_drive_service()
-        file_name = file_name or os.path.basename(file_path)
-        mime_type = mime_type or mimetypes.guess_type(file_path)[0] or 'application/octet-stream'
+    # Load or request OAuth token
+    if os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    else:
+        flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+        creds = flow.run_local_server(port=0)
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
 
-        file_metadata = {
-            'name': file_name,
-            'parents': [folder_id]
-        }
+    # Connect to Drive API
+    service = build('drive', 'v3', credentials=creds)
 
-        media = MediaFileUpload(file_path, mimetype=mime_type, resumable=True)
+    # Set file metadata and upload
+    file_metadata = {
+        'name': os.path.basename(file_path),
+        'parents': [folder_id]
+    }
+    media = MediaFileUpload(file_path, resumable=True)
+    file = service.files().create(
+        body=file_metadata,
+        media_body=media,
+        fields='id, webViewLink'
+    ).execute()
 
-        uploaded_file = service.files().create(
-            body=file_metadata,
-            media_body=media,
-            fields='id, webViewLink'
-        ).execute()
+    print("✅ Upload successful!")
+    print("📎 File ID:", file.get('id'))
+    print("🔗 View it:", file.get('webViewLink'))
 
-        print(f"✅ Uploaded: {file_name}")
-        print(f"🔗 View it here: {uploaded_file['webViewLink']}")
-        return uploaded_file.get('id')
-
-    except Exception as e:
-        print("[ERROR] Upload failed!")
-        raise e
+# 🔻 Run uploader
+if __name__ == "__main__":
+    upload_file_to_drive("test.txt", "1fAwlJq2od7nMYPEojHDBYN3zsdIzpseZ")
