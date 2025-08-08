@@ -1,19 +1,9 @@
-from django.contrib import admin
-from django.urls import path, include
-from django.http import JsonResponse
-
-# ✅ Custom JSON error handlers
-def custom_404(request, exception):
-    return JsonResponse({"error": "Not found"}, status=404)
-
-def custom_500(request):
-    return JsonResponse({"error": "Internal server error"}, status=500)
+from django.urls import path, re_path
+from . import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('collectors.urls')),
+    # Accepts /api/company/MSFT or /api/company/MSFT/
+    re_path(r'^company/(?P<ticker>[\w\.-]+)/?$', views.company_data_view, name='company_data'),
+    # Accepts POST to /api/upload/
+    path('upload/', views.upload_to_drive, name='upload_to_drive'),
 ]
-
-# ✅ Ensure all errors return JSON
-handler404 = "backend.urls.custom_404"
-handler500 = "backend.urls.custom_500"
