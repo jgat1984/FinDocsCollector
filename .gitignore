@@ -19,4 +19,8 @@ frontend/build/
 *.user
 *.pyproj
 
+credentials.json
+
 collectors/token.pickle
+
+
