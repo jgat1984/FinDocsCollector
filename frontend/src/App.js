@@ -58,7 +58,7 @@ function App() {
 
   return (
     <div className="container">
-      <h1>FinDocsCollector</h1>
+      <h1>FinDocsCollector--One moment to load...</h1>
 
       <input
         type="text"
